@@ -121,7 +121,10 @@
   .sp-tip { max-width: 380px; text-align: center; }
   .sp-tip-t { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin: 0; }
   .sp-tip-s { font-size: 11px; color: var(--muted); margin: 8px 0 0; }
-  .sp-credit { font-size: 11px; color: var(--muted); margin-top: 22px; letter-spacing: .02em; }
+  .sp-prog { width: 110px; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 20px; }
+  .sp-prog i { display: block; height: 100%; width: 100%; background: var(--red); }
+  .sp-skip { font-size: 11px; color: var(--muted); margin-top: 9px; }
+  .sp-credit { font-size: 11px; color: var(--muted); margin-top: 18px; letter-spacing: .02em; }
   @media (prefers-reduced-motion: reduce) { .splash { transition: none; } }
 
   /* ---- 새 버전 알림 ---- */
@@ -341,6 +344,8 @@
       <p class="sp-tip-t" id="tipT"></p>
       <p class="sp-tip-s" id="tipS"></p>
     </div>
+    <div class="sp-prog"><i id="spProg"></i></div>
+    <div class="sp-skip">탭하면 바로 시작</div>
     <div class="sp-credit">Developed by Woo Hyun</div>
   </div>
 </div>
@@ -1566,6 +1571,20 @@
     var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
     $("#tipT").textContent = tip.t;
     $("#tipS").textContent = tip.s ? "— " + tip.s : "";
+
+    // 읽는 시간에 맞춰 노출 시간을 정한다.
+    // 한글 묵독을 대략 초당 12자로 보고, 화면을 인식하는 시간 0.9초를 더한 뒤
+    // 너무 짧거나(못 읽음) 너무 길지(매번 답답함) 않게 3~8초로 자른다.
+    // 긴 팁은 상한에 걸리지만, 다 읽은 사람은 탭해서 바로 넘어가면 된다.
+    var chars = tip.t.length + (tip.s ? tip.s.length : 0);
+    var ms = Math.min(8000, Math.max(3000, 900 + chars * 83));
+
+    var bar = $("#spProg");
+    requestAnimationFrame(function () {
+      bar.style.transition = "width " + ms + "ms linear";
+      bar.style.width = "0%";
+    });
+
     var done = false;
     function hide() {
       if (done) return;
@@ -1574,7 +1593,7 @@
       setTimeout(function () { if (sp.parentNode) sp.parentNode.removeChild(sp); }, 400);
     }
     sp.addEventListener("click", hide);
-    setTimeout(hide, 2200);
+    setTimeout(hide, ms);
   })();
 
   fillSel("#cdtype", CARDIO);
