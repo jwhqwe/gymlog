@@ -103,6 +103,18 @@ __PWA_HEAD__
   .sp-credit { font-size: 11px; color: var(--muted); margin-top: 22px; letter-spacing: .02em; }
   @media (prefers-reduced-motion: reduce) { .splash { transition: none; } }
 
+  /* ---- 새 버전 알림 ---- */
+  .upd {
+    display: none; align-items: center; gap: 10px; margin: 10px 0 0;
+    background: var(--ink); color: var(--paper); border-radius: 11px; padding: 9px 10px 9px 13px;
+  }
+  .upd.on { display: flex; }
+  .upd span { font-size: 12.5px; font-weight: 600; flex: 1; }
+  .upd button {
+    font-family: var(--display); font-weight: 400; font-size: 13px; flex: none;
+    padding: 7px 12px; border-radius: 8px; background: var(--red); color: #fff;
+  }
+
   .app { max-width: 520px; margin: 0 auto; min-height: 100dvh; }
 
   .top {
@@ -335,6 +347,10 @@ __PWA_HEAD__
         <span><i style="background:var(--good)"></i>식단</span>
         <span><i style="background:var(--info)"></i>인바디</span>
       </div>
+    </div>
+    <div class="upd" id="upd">
+      <span>새 버전이 준비됐어요</span>
+      <button id="updBtn">지금 적용</button>
     </div>
   </div>
 
@@ -713,10 +729,20 @@ __PWA_HEAD__
       s: "Morton et al. (2018), British Journal of Sports Medicine" },
     { t: "세트 사이 휴식은 1분보다 3분이 근력·근비대 모두에서 더 좋았습니다. 너무 짧게 쉬면 다음 세트 수행량이 떨어져 총 볼륨이 줄어듭니다.",
       s: "Schoenfeld et al. (2016), J Strength Cond Res 30:1805-1812" },
+    { t: "삼두는 오버헤드 익스텐션이 푸시다운보다 약 1.4배 더 성장시켰습니다. 12주간 한쪽 팔씩 비교한 결과입니다. 장두가 늘어난 상태로 훈련되기 때문입니다.",
+      s: "Maeo et al. (2023), European Journal of Sport Science" },
+    { t: "가벼운 무게(1RM의 60% 이하)도 실패 지점까지 하면 무거운 무게와 비슷하게 근비대가 일어납니다. 다만 최대 근력은 무거운 무게가 유리합니다.",
+      s: "Schoenfeld et al. (2017), J Strength Cond Res" },
+    { t: "실패 지점까지 안 가도 됩니다. 1~3회 남기고 멈춰도 근비대는 거의 같았고, 오히려 매번 실패까지 가면 근력 향상엔 손해일 수 있습니다.",
+      s: "Refalo et al. (2023), Sports Medicine" },
+    { t: "인클라인 컬은 이두 위쪽(근위부), 프리처 컬은 아래쪽(원위부)이 더 자랐습니다. 부위별로 자라는 곳이 달라서 둘 다 하면 고르게 커집니다. 차이는 크지 않습니다.",
+      s: "Distinct muscle growth after preacher and incline biceps curls (2025)" },
     { t: "그립이 팔의 타겟을 바꿉니다. 언더그립은 이두, 오버그립은 상완근, 뉴트럴 그립은 상완요골근이 주로 일합니다.", s: null },
     { t: "삼두 장두는 유일하게 어깨관절을 지나갑니다. 그래서 팔을 머리 위로 올려야 제대로 늘어나고, 옆구리에 붙이면 외측두가 주로 쓰입니다.", s: null },
     { t: "어시스트 풀업의 kg은 기계가 도와주는 무게라 낮을수록 잘한 겁니다. 이 앱은 체중에서 빼서 실부하로 기록합니다.", s: null },
-    { t: "매번 무게를 올릴 필요는 없습니다. 지난주보다 총 볼륨이 조금이라도 늘면 그게 점진적 과부하입니다.", s: null }
+    { t: "매번 무게를 올릴 필요는 없습니다. 지난주보다 총 볼륨이 조금이라도 늘면 그게 점진적 과부하입니다.", s: null },
+    { t: "근육통은 성장의 증거가 아닙니다. 안 아프다고 헛한 게 아니고, 죽을 것 같다고 더 큰 것도 아닙니다. 기록이 늘고 있는지를 보세요.", s: null },
+    { t: "무게를 못 올리겠으면 횟수를 먼저 늘려보세요. 30kg 8회가 30kg 10회가 되면 그것도 볼륨 증가입니다.", s: null }
   ];
 
   var D = {
@@ -1510,6 +1536,9 @@ __PWA_HEAD__
     else if (page === "stats") { drawStats(); drawRest(); }
     else if (page === "theory") drawNotes();
   }
+  // 새 버전 알림 — 서비스워커가 새 버전을 받아두면 배너가 뜬다 (등록 스크립트가 .on 을 붙임)
+  $("#updBtn").onclick = function () { location.reload(); };
+
   // 로딩 화면 — 팁을 읽을 만큼만 띄우고, 아무 데나 누르면 바로 넘어간다
   (function () {
     var sp = $("#splash");

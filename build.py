@@ -40,7 +40,20 @@ PWA_HEAD = """<link rel="manifest" href="./manifest.json" />
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js").catch(function () {});
+      navigator.serviceWorker.register("./sw.js").then(function (reg) {
+        // 새 워커가 설치 완료되면(= 새 버전을 다 받아두면) 배너를 띄운다.
+        // controller 가 이미 있을 때만 = 첫 설치가 아니라 '업데이트'일 때만.
+        reg.addEventListener("updatefound", function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener("statechange", function () {
+            if (nw.state === "installed" && navigator.serviceWorker.controller) {
+              var b = document.getElementById("upd");
+              if (b) b.classList.add("on");
+            }
+          });
+        });
+      }).catch(function () {});
     });
   }
 </script>"""
