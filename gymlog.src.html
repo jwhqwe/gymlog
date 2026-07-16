@@ -627,11 +627,17 @@ __PWA_HEAD__
     ["삼두 — 장두와 외측두", "삼두근은 세 갈래(장두·외측두·내측두)이고, 팔의 각도가 어느 갈래를 쓰는지 정한다.\n\n1. 장두 (Long head)\n   · 유일하게 어깨관절을 지나간다 → 팔을 머리 위로 올려야 늘어나면서 강하게 쓰인다.\n   · 케이블 오버헤드 익스텐션, 스컬크러셔\n   · 삼두 부피의 대부분 → 팔 두께에 가장 크게 기여\n\n2. 외측두 (Lateral head)\n   · 팔 바깥쪽. 팔을 몸 옆에 붙인 자세에서 잘 쓰인다.\n   · 케이블 푸시다운\n   · 팔의 '말굽' 실루엣을 만든다\n\n정리: 팔을 위로 → 장두 / 팔을 옆구리에 → 외측두. 둘 다 해야 고르게 큰다."]
   ];
 
+  // 3분할 — 등·삼두 / 가슴·이두 / 하체·어깨 (앞 두 날은 측면삼각근을 조금씩 끼워넣는다)
+  var SEED_V = 2;
   var SEED_ROUTINES = {
-    "등 + 삼두": ["Arm Pulldown", "Assisted Pull-up", "랫풀다운", "D.Y Row",
-                  "케이블 레터럴 레이즈", "덤벨 레터럴 레이즈", "케이블 푸시다운", "트라이셉스 익스텐션"],
-    "하체 + 어깨": ["시티드 레그컬", "핵 스쿼트", "레그프레스", "레그익스텐션",
-                    "덤벨 레터럴 레이즈", "케이블 레터럴 레이즈", "리어델트 플라이"]
+    "1일차 · 등 + 삼두": ["Arm Pulldown", "Assisted Pull-up", "랫풀다운", "D.Y Row",
+                          "케이블 푸시다운", "트라이셉스 익스텐션",
+                          "케이블 레터럴 레이즈", "덤벨 레터럴 레이즈"],
+    "2일차 · 가슴 + 이두": ["체스트프레스 머신", "인클라인 덤벨프레스", "케이블 플라이",
+                            "바벨컬", "인클라인 덤벨컬", "해머컬", "리버스 그립 컬",
+                            "케이블 레터럴 레이즈"],
+    "3일차 · 하체 + 어깨": ["시티드 레그컬", "핵 스쿼트", "레그프레스", "레그익스텐션",
+                            "덤벨 레터럴 레이즈", "케이블 레터럴 레이즈", "리어델트 플라이"]
   };
 
   var D = {
@@ -644,16 +650,23 @@ __PWA_HEAD__
     if (raw) { var p = JSON.parse(raw); for (var k in D) if (p[k] !== undefined) D[k] = p[k];
       if (!D.settings) D.settings = { autoRest: true, restSec: 90 }; }
   } catch (e) {}
-  // 기본 루틴은 한 번만 넣는다 (지운 뒤 다시 살아나지 않도록 플래그로 표시)
-  if (!D.settings.routinesSeeded) {
+  // 기본 루틴 시드. 버전을 올리면 새로 추가된 루틴만 들어간다.
+  // (이미 있는 이름은 건드리지 않아 사용자가 수정한 루틴이 덮어써지지 않는다)
+  var seeded = false;
+  if (D.settings.seedV !== SEED_V) {
+    delete D.routines["등 + 삼두"];        // v1에서 쓰던 이름 정리
+    delete D.routines["하체 + 어깨"];
     for (var rn in SEED_ROUTINES) if (!D.routines[rn]) D.routines[rn] = SEED_ROUTINES[rn];
-    D.settings.routinesSeeded = true;
+    D.settings.seedV = SEED_V;
+    delete D.settings.routinesSeeded;
+    seeded = true;   // 아래 save() 정의 후 곧바로 저장한다
   }
   var warned = false;
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(D)); }
     catch (e) { if (!warned) { warned = true; alert("이 브라우저에 저장할 수 없습니다. 사파리 개인정보 보호 모드를 끄고 다시 시도해 주세요."); } }
   }
+  if (seeded) save();   // 시드/마이그레이션을 바로 굳혀서 매번 다시 돌지 않게 한다
 
   var $ = function (s) { return document.querySelector(s); };
   var el = function (t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };

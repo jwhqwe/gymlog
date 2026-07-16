@@ -1,6 +1,6 @@
 /* 헬스로그 서비스워커 — 앱 껍데기를 캐시해서 오프라인(지하 헬스장)에서도 열리게 한다.
    빌드할 때 build.py 가 CACHE 이름의 버전을 갱신한다. */
-const CACHE = "gymlog-4e4dba4e";
+const CACHE = "gymlog-69c1fcc9";
 const ASSETS = [
   "./",
   "./index.html",
