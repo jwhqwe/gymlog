@@ -429,12 +429,12 @@
         <div class="kpi"><div class="v" id="k3">0</div><div class="k">총 기록일</div></div>
       </div>
       <div class="card">
-        <p class="h">종목별 추이</p>
+        <p class="h" id="chTitle">종목별 추이</p>
         <select id="stex"></select>
         <div class="kpis" style="margin:10px 0 4px">
-          <div class="kpi"><div class="v" id="pr1" style="color:var(--red)">—</div><div class="k">최고 무게</div></div>
-          <div class="kpi"><div class="v" id="pr2">—</div><div class="k">추정 1RM</div></div>
-          <div class="kpi"><div class="v" id="pr3">—</div><div class="k">최고 볼륨</div></div>
+          <div class="kpi"><div class="v" id="pr1" style="color:var(--red)">—</div><div class="k" id="prk1">최고 무게</div></div>
+          <div class="kpi"><div class="v" id="pr2">—</div><div class="k" id="prk2">추정 1RM</div></div>
+          <div class="kpi"><div class="v" id="pr3">—</div><div class="k" id="prk3">최고 볼륨</div></div>
         </div>
         <svg class="chart" id="chVol"></svg>
       </div>
@@ -692,7 +692,22 @@
   function exList(p) { return (EX[p] || []).concat(D.customEx[p] || []); }
   function allEx() { var o = []; for (var p in EX) o = o.concat(exList(p)); return o; }
   function partOf(n) { for (var p in EX) if (exList(p).indexOf(n) >= 0) return p; return "기타"; }
-  function vol(d) { var t = 0, w = D.workouts[d]; if (!w) return 0; w.ex.forEach(function (e) { e.sets.forEach(function (s) { t += s.w * s.r; }); }); return t; }
+  /* 보조(어시스트) 종목: kg이 '나를 도와주는 무게'라서 낮을수록 잘한 것.
+     무게×횟수를 볼륨으로 치면 정반대로 나오므로 볼륨·PR·1RM 계산에서 제외하고
+     '최저 보조'로 따로 읽는다. */
+  var ASSIST = { "Assisted Pull-up": 1, "어시스트 풀업": 1, "어시스트 딥스": 1 };
+  function isAssist(name) { return !!ASSIST[name]; }
+  function minAssist(e) { return Math.min.apply(null, e.sets.map(function (s) { return s.w; })); }
+
+  function vol(d) {
+    var t = 0, w = D.workouts[d];
+    if (!w) return 0;
+    w.ex.forEach(function (e) {
+      if (isAssist(e.name)) return;   // 보조 종목은 볼륨에 넣지 않는다
+      e.sets.forEach(function (s) { t += s.w * s.r; });
+    });
+    return t;
+  }
   function e1rm(w, r) { return r <= 0 || w <= 0 ? 0 : (r === 1 ? w : w * (1 + r / 30)); }
   function lastRec(name) {
     var ds = Object.keys(D.workouts).sort().reverse();
@@ -897,13 +912,18 @@
       var g = el("div", "exg"), h = el("div", "exh");
       h.appendChild(el("b", "", e.name));
       h.appendChild(el("span", "pt", e.part || partOf(e.name)));
-      var v = 0; e.sets.forEach(function (s) { v += s.w * s.r; });
-      h.appendChild(el("span", "vol", e.sets.length + "세트 · " + fmt(v) + "kg"));
+      var asst = isAssist(e.name);
+      if (asst) {
+        h.appendChild(el("span", "vol", e.sets.length + "세트 · 최저 보조 " + fmt(minAssist(e)) + "kg"));
+      } else {
+        var v = 0; e.sets.forEach(function (s) { v += s.w * s.r; });
+        h.appendChild(el("span", "vol", e.sets.length + "세트 · " + fmt(v) + "kg"));
+      }
       g.appendChild(h);
       e.sets.forEach(function (s, si) {
         var r = el("div", "st");
         r.appendChild(el("div", "n", String(si + 1)));
-        r.appendChild(el("b", "", fmt(s.w) + "kg"));
+        r.appendChild(el("b", "", (asst ? "보조 " : "") + fmt(s.w) + "kg"));
         r.appendChild(el("span", "", "× " + s.r + "회"));
         var x = el("button", "x", "×");
         x.onclick = function () { e.sets.splice(si, 1); if (!e.sets.length) day.ex.splice(ei, 1); save(); render(); drawCal(); };
@@ -1226,19 +1246,43 @@
     $("#k1").textContent = wkDays + "일";
     $("#k2").textContent = fmt(wkVol / 1000);
     $("#k3").textContent = Object.keys(D.workouts).filter(function (x) { var w = D.workouts[x]; return w.ex.length || w.cardio.length; }).length;
-    var ex = sel.value, pts = [], pw = 0, p1 = 0, pv = 0;
+    var ex = sel.value, asst = isAssist(ex), pts = [], pw = 0, p1 = 0, pv = 0, best = Infinity;
     Object.keys(D.workouts).sort().forEach(function (d3) {
       D.workouts[d3].ex.forEach(function (e) {
         if (e.name !== ex || !e.sets.length) return;
+        if (asst) {
+          // 보조 종목: 그날의 '최저 보조 무게'를 추적한다 (낮을수록 발전)
+          var mn = minAssist(e);
+          best = Math.min(best, mn);
+          pts.push([d3, mn]);
+          return;
+        }
         var v = 0;
         e.sets.forEach(function (s) { v += s.w * s.r; pw = Math.max(pw, s.w); p1 = Math.max(p1, e1rm(s.w, s.r)); });
         pv = Math.max(pv, v); pts.push([d3, v]);
       });
     });
-    $("#pr1").textContent = pw ? fmt(pw) + "kg" : "—";
-    $("#pr2").textContent = p1 ? Math.round(p1) + "kg" : "—";
-    $("#pr3").textContent = pv ? fmt(pv) + "kg" : "—";
-    lineChart("#chVol", pts, "var(--red)");
+    // 보조 종목은 볼륨·1RM이 의미가 없으므로 지표 자체를 바꿔 단다
+    $("#prk1").textContent = asst ? "최저 보조" : "최고 무게";
+    $("#prk2").textContent = asst ? "최근 보조" : "추정 1RM";
+    $("#prk3").textContent = asst ? "변화" : "최고 볼륨";
+    if (asst) {
+      var last = pts.length ? pts[pts.length - 1][1] : 0;
+      var first = pts.length ? pts[0][1] : 0;
+      var diff = last - first;
+      $("#pr1").textContent = pts.length ? fmt(best) + "kg" : "—";
+      $("#pr2").textContent = pts.length ? fmt(last) + "kg" : "—";
+      $("#pr3").textContent = pts.length < 2 ? "—" : (diff < 0 ? "↓ " : diff > 0 ? "↑ " : "") + fmt(Math.abs(diff)) + "kg";
+      $("#pr3").style.color = pts.length < 2 ? "" : (diff < 0 ? "var(--good)" : diff > 0 ? "var(--muted)" : "");
+      $("#chTitle").textContent = "보조 무게 추이 — 낮을수록 좋음";
+    } else {
+      $("#pr1").textContent = pw ? fmt(pw) + "kg" : "—";
+      $("#pr2").textContent = p1 ? Math.round(p1) + "kg" : "—";
+      $("#pr3").textContent = pv ? fmt(pv) + "kg" : "—";
+      $("#pr3").style.color = "";
+      $("#chTitle").textContent = "종목별 추이";
+    }
+    lineChart("#chVol", pts, asst ? "var(--good)" : "var(--red)");
     var cnt = {}, st = new Date(); st.setDate(st.getDate() - 6);
     for (var d5 in D.workouts) {
       var dd5 = pd(d5);
