@@ -1,0 +1,10 @@
+# 빌드 중간 산출물
+__pycache__/
+*.pyc
+
+# 아티팩트용 단일 파일 (docs/ 가 실제 배포본)
+gymlog.html
+
+# 임시 테스트 파일
+_test_*.html
+_probe.html
