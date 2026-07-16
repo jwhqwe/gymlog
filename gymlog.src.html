@@ -83,6 +83,26 @@ __PWA_HEAD__
     font-family: var(--display); font-weight: 400;
   }
 
+  /* ---- 로딩 화면 ---- */
+  .splash {
+    position: fixed; inset: 0; z-index: 100; background: var(--paper);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 26px calc(22px + env(safe-area-inset-bottom));
+    transition: opacity .35s ease;
+  }
+  .splash.gone { opacity: 0; pointer-events: none; }
+  /* 제목은 위쪽 남는 공간의 한가운데, 팁·크레딧은 아래에 묶어서 고정 */
+  .sp-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .sp-foot { flex: none; display: flex; flex-direction: column; align-items: center; }
+  .sp-mark { font-family: var(--display); font-weight: 400; font-size: 40px;
+    letter-spacing: .12em; color: var(--ink); text-indent: .12em; }
+  .sp-bar { width: 132px; height: 5px; border-radius: 3px; background: var(--red); margin-top: 14px; }
+  .sp-tip { max-width: 380px; text-align: center; }
+  .sp-tip-t { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin: 0; }
+  .sp-tip-s { font-size: 11px; color: var(--muted); margin: 8px 0 0; }
+  .sp-credit { font-size: 11px; color: var(--muted); margin-top: 22px; letter-spacing: .02em; }
+  @media (prefers-reduced-motion: reduce) { .splash { transition: none; } }
+
   .app { max-width: 520px; margin: 0 auto; min-height: 100dvh; }
 
   .top {
@@ -277,6 +297,20 @@ __PWA_HEAD__
   .sw i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .15s; }
   .sw.on i { transform: translateX(18px); }
 </style>
+
+<div class="splash" id="splash">
+  <div class="sp-top">
+    <div class="sp-mark">헬스로그</div>
+    <div class="sp-bar"></div>
+  </div>
+  <div class="sp-foot">
+    <div class="sp-tip">
+      <p class="sp-tip-t" id="tipT"></p>
+      <p class="sp-tip-s" id="tipS"></p>
+    </div>
+    <div class="sp-credit">Developed by Woo Hyun</div>
+  </div>
+</div>
 
 <div class="app">
   <div class="top">
@@ -668,6 +702,22 @@ __PWA_HEAD__
     "3일차 · 하체 + 어깨": ["시티드 레그컬", "핵 스쿼트", "레그프레스", "레그익스텐션",
                             "덤벨 레터럴 레이즈", "케이블 레터럴 레이즈", "리어델트 플라이"]
   };
+
+  /* 로딩 화면 꿀팁.
+     s(출처)가 있는 건 실제로 확인한 논문만 넣는다. 출처 없는 건 앱/해부학 팁이라
+     논문 인용을 붙이지 않는다. 없는 논문을 지어내지 말 것. */
+  var TIPS = [
+    { t: "근비대를 극대화하려면 주당 부위당 20세트 이상도 권장될 수 있습니다. 다만 볼륨이 높아질수록 세트 하나당 돌아오는 이득은 점점 작아집니다.",
+      s: "Pelland et al., The Resistance Training Dose Response (메타회귀분석)" },
+    { t: "단백질은 체중 1kg당 약 1.6g 부근에서 추가 이득이 거의 사라집니다. 개인차를 감안한 상한이 약 2.2g/kg입니다.",
+      s: "Morton et al. (2018), British Journal of Sports Medicine" },
+    { t: "세트 사이 휴식은 1분보다 3분이 근력·근비대 모두에서 더 좋았습니다. 너무 짧게 쉬면 다음 세트 수행량이 떨어져 총 볼륨이 줄어듭니다.",
+      s: "Schoenfeld et al. (2016), J Strength Cond Res 30:1805-1812" },
+    { t: "그립이 팔의 타겟을 바꿉니다. 언더그립은 이두, 오버그립은 상완근, 뉴트럴 그립은 상완요골근이 주로 일합니다.", s: null },
+    { t: "삼두 장두는 유일하게 어깨관절을 지나갑니다. 그래서 팔을 머리 위로 올려야 제대로 늘어나고, 옆구리에 붙이면 외측두가 주로 쓰입니다.", s: null },
+    { t: "어시스트 풀업의 kg은 기계가 도와주는 무게라 낮을수록 잘한 겁니다. 이 앱은 체중에서 빼서 실부하로 기록합니다.", s: null },
+    { t: "매번 무게를 올릴 필요는 없습니다. 지난주보다 총 볼륨이 조금이라도 늘면 그게 점진적 과부하입니다.", s: null }
+  ];
 
   var D = {
     workouts: {}, diet: {}, body: {}, routines: {}, customEx: {},
@@ -1460,6 +1510,23 @@ __PWA_HEAD__
     else if (page === "stats") { drawStats(); drawRest(); }
     else if (page === "theory") drawNotes();
   }
+  // 로딩 화면 — 팁을 읽을 만큼만 띄우고, 아무 데나 누르면 바로 넘어간다
+  (function () {
+    var sp = $("#splash");
+    var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+    $("#tipT").textContent = tip.t;
+    $("#tipS").textContent = tip.s ? "— " + tip.s : "";
+    var done = false;
+    function hide() {
+      if (done) return;
+      done = true;
+      sp.classList.add("gone");
+      setTimeout(function () { if (sp.parentNode) sp.parentNode.removeChild(sp); }, 400);
+    }
+    sp.addEventListener("click", hide);
+    setTimeout(hide, 2200);
+  })();
+
   fillSel("#cdtype", CARDIO);
   buildBody($("#mmFront"), "front"); buildBody($("#mmBack"), "back");
   drawParts(); drawEx(); drawSlots(); drawBodyFields(); drawMetChips();
