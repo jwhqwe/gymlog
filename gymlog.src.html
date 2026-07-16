@@ -97,13 +97,14 @@ __PWA_HEAD__
   .sp-mark { font-family: var(--display); font-weight: 400; font-size: 40px;
     letter-spacing: .12em; color: var(--ink); text-indent: .12em; }
   .sp-bar { width: 132px; height: 5px; border-radius: 3px; background: var(--red); margin-top: 14px; }
-  .sp-tip { max-width: 380px; text-align: center; }
-  .sp-tip-t { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin: 0; }
-  .sp-tip-s { font-size: 11px; color: var(--muted); margin: 8px 0 0; }
-  .sp-prog { width: 110px; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 20px; }
+  .sp-tip { max-width: 400px; text-align: center; }
+  .sp-tip-t { font-size: 16.5px; line-height: 1.65; color: var(--ink); margin: 0; font-weight: 500; }
+  .sp-tip-s { font-size: 12.5px; color: var(--muted); margin: 12px 0 0; }
+  .sp-prog { width: 110px; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 22px; }
   .sp-prog i { display: block; height: 100%; width: 100%; background: var(--red); }
-  .sp-skip { font-size: 11px; color: var(--muted); margin-top: 9px; }
-  .sp-credit { font-size: 11px; color: var(--muted); margin-top: 18px; letter-spacing: .02em; }
+  .sp-skip { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .sp-credit { font-family: var(--display); font-weight: 400; font-size: 14px;
+    color: var(--ink-2); margin-top: 20px; letter-spacing: .04em; }
   @media (prefers-reduced-motion: reduce) { .splash { transition: none; } }
 
   /* ---- 새 버전 알림 ---- */
@@ -249,12 +250,34 @@ __PWA_HEAD__
 
   .tabs { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px;
     background: color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter: saturate(1.6) blur(14px);
-    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(6, 1fr);
     padding-bottom: env(safe-area-inset-bottom); z-index: 50; }
   .tab { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); }
-  .tab svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-  .tab span { font-size: 11px; letter-spacing: -.01em; }
+  .tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .tab span { font-size: 10px; letter-spacing: -.03em; white-space: nowrap; }
   .tab.on { color: var(--red); }
+
+  /* ---- 동기부여 ---- */
+  .hype {
+    background: var(--ink); color: var(--paper); border-radius: var(--r);
+    padding: 30px 20px; text-align: center; margin-bottom: 12px; cursor: pointer;
+    min-height: 172px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .hype p { font-family: var(--display); font-weight: 400; font-size: 22px; line-height: 1.5;
+    margin: 0; letter-spacing: -.01em; }
+  .hype .again { font-size: 11px; opacity: .5; margin-top: 16px; font-weight: 700; }
+  .fstat { display: flex; align-items: baseline; gap: 8px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .fstat:last-child { border-bottom: none; }
+  .fstat .lb { font-size: 13px; color: var(--ink-2); flex: 1; }
+  .fstat .vv { font-family: var(--display); font-weight: 400; font-size: 19px; }
+  .fstat .dd { font-size: 12px; font-weight: 800; }
+  .up { color: var(--good); } .down { color: var(--muted); }
+  .pr-item { display: flex; align-items: baseline; gap: 8px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .pr-item:last-child { border-bottom: none; }
+  .pr-item b { font-size: 14px; flex: 1; font-weight: 700; }
+  .pr-item .w { font-family: var(--display); font-weight: 400; font-size: 16px; color: var(--red); }
+  .pr-item .d { font-size: 11px; color: var(--muted); }
+  .big-t { font-family: var(--display); font-weight: 400; font-size: 30px; letter-spacing: -.02em; }
 
   .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
   .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; }
@@ -433,6 +456,28 @@ __PWA_HEAD__
       <div id="lifts"></div>
     </section>
 
+    <section class="page" id="p-fire">
+      <div class="hype" id="hype">
+        <p id="hypeT">—</p>
+        <div class="again">탭하면 다음</div>
+      </div>
+      <div class="card">
+        <p class="h">이번 주</p>
+        <div class="fstat"><span class="lb">운동한 날</span><span class="vv" id="f1">—</span></div>
+        <div class="fstat"><span class="lb">들어올린 총 무게</span><span class="vv" id="f2">—</span><span class="dd" id="f2d"></span></div>
+        <div class="fstat"><span class="lb">총 세트</span><span class="vv" id="f3">—</span></div>
+      </div>
+      <div class="card">
+        <p class="h">최근 신기록</p>
+        <div id="prlist"></div>
+      </div>
+      <div class="card" style="text-align:center">
+        <p class="h">지금까지 들어올린 무게</p>
+        <div class="big-t" id="fTotal">—</div>
+        <div class="vs" id="fTotalSub" style="font-size:12px;color:var(--muted);margin-top:4px">—</div>
+      </div>
+    </section>
+
     <section class="page" id="p-diet">
       <div class="card">
         <p class="h">오늘 합계</p>
@@ -566,6 +611,7 @@ __PWA_HEAD__
 
   <nav class="tabs">
     <button class="tab on" data-p="lift"><svg viewBox="0 0 24 24"><path d="M4 9v6M20 9v6M7 6v12M17 6v12M7 12h10"/></svg><span>운동</span></button>
+    <button class="tab" data-p="fire"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6 5 9a5 5 0 0 1-10 0c0-1.5.6-2.8 1.5-4 .4 1 1 1.6 1.7 1.8C10.5 7.5 11 5 12 3z"/></svg><span>동기부여</span></button>
     <button class="tab" data-p="diet"><svg viewBox="0 0 24 24"><path d="M6 3v8a3 3 0 0 0 6 0V3M9 11v10M17 3c-1.5 2-2 4-2 6s.5 3 2 3 2-1 2-3-.5-4-2-6zM17 12v9"/></svg><span>식단</span></button>
     <button class="tab" data-p="body"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M12 15l-3 6M12 15l3 6M6 10l6-1 6 1"/></svg><span>인바디</span></button>
     <button class="tab" data-p="stats"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l4-5 3 3 5-7"/></svg><span>통계</span></button>
@@ -728,26 +774,28 @@ __PWA_HEAD__
      s(출처)가 있는 건 실제로 확인한 논문만 넣는다. 출처 없는 건 앱/해부학 팁이라
      논문 인용을 붙이지 않는다. 없는 논문을 지어내지 말 것. */
   var TIPS = [
-    { t: "근비대를 극대화하려면 주당 부위당 20세트 이상도 권장될 수 있습니다. 다만 볼륨이 높아질수록 세트 하나당 돌아오는 이득은 점점 작아집니다.",
+    { t: "주당 20세트에서 멈출 이유는 없다. 더 하면 더 큰다. 대신 한 세트가 주는 이득은 점점 줄어드니, 미련하게 말고 영리하게 쌓아라.",
       s: "Pelland et al., The Resistance Training Dose Response (메타회귀분석)" },
-    { t: "단백질은 체중 1kg당 약 1.6g 부근에서 추가 이득이 거의 사라집니다. 개인차를 감안한 상한이 약 2.2g/kg입니다.",
+    { t: "단백질은 체중 1kg당 1.6g에서 이득이 멈춘다. 그 위로는 욕심이다. 하지만 못 채우면 헬스장에서 흘린 땀이 아깝다.",
       s: "Morton et al. (2018), British Journal of Sports Medicine" },
-    { t: "세트 사이 휴식은 1분보다 3분이 근력·근비대 모두에서 더 좋았습니다. 너무 짧게 쉬면 다음 세트 수행량이 떨어져 총 볼륨이 줄어듭니다.",
+    { t: "1분 쉬고 다음 세트 갈 거면, 3분 쉬어라. 근력도 크기도 3분이 이겼다. 급하게 쉬면 다음 세트에서 다 잃는다.",
       s: "Schoenfeld et al. (2016), J Strength Cond Res 30:1805-1812" },
-    { t: "삼두는 오버헤드 익스텐션이 푸시다운보다 약 1.4배 더 성장시켰습니다. 12주간 한쪽 팔씩 비교한 결과입니다. 장두가 늘어난 상태로 훈련되기 때문입니다.",
+    { t: "삼두를 키우고 싶으면 팔을 머리 위로 올려라. 12주간 한쪽 팔씩 붙여본 결과, 오버헤드 익스텐션이 푸시다운보다 1.4배 더 키웠다.",
       s: "Maeo et al. (2023), European Journal of Sport Science" },
-    { t: "가벼운 무게(1RM의 60% 이하)도 실패 지점까지 하면 무거운 무게와 비슷하게 근비대가 일어납니다. 다만 최대 근력은 무거운 무게가 유리합니다.",
+    { t: "5kg으로 20개, 헛수고 아니다. 실패 지점까지만 가면 무거운 무게와 근비대는 똑같았다. 다만 힘 자체를 키우려면 무거운 걸 들어라.",
       s: "Schoenfeld et al. (2017), J Strength Cond Res" },
-    { t: "실패 지점까지 안 가도 됩니다. 1~3회 남기고 멈춰도 근비대는 거의 같았고, 오히려 매번 실패까지 가면 근력 향상엔 손해일 수 있습니다.",
+    { t: "매 세트 죽을 필요 없다. 1~3개 남기고 멈춰도 근육은 똑같이 컸다. 오히려 매번 실패까지 가면 힘은 덜 늘 수 있다.",
       s: "Refalo et al. (2023), Sports Medicine" },
-    { t: "인클라인 컬은 이두 위쪽(근위부), 프리처 컬은 아래쪽(원위부)이 더 자랐습니다. 부위별로 자라는 곳이 달라서 둘 다 하면 고르게 커집니다. 차이는 크지 않습니다.",
+    { t: "인클라인 컬은 이두 위쪽을, 프리처 컬은 아래쪽을 키웠다. 팔은 한 각도로만 크지 않는다. 둘 다 해라. 차이는 크지 않지만 공짜다.",
       s: "Distinct muscle growth after preacher and incline biceps curls (2025)" },
-    { t: "그립이 팔의 타겟을 바꿉니다. 언더그립은 이두, 오버그립은 상완근, 뉴트럴 그립은 상완요골근이 주로 일합니다.", s: null },
-    { t: "삼두 장두는 유일하게 어깨관절을 지나갑니다. 그래서 팔을 머리 위로 올려야 제대로 늘어나고, 옆구리에 붙이면 외측두가 주로 쓰입니다.", s: null },
-    { t: "어시스트 풀업의 kg은 기계가 도와주는 무게라 낮을수록 잘한 겁니다. 이 앱은 체중에서 빼서 실부하로 기록합니다.", s: null },
-    { t: "매번 무게를 올릴 필요는 없습니다. 지난주보다 총 볼륨이 조금이라도 늘면 그게 점진적 과부하입니다.", s: null },
-    { t: "근육통은 성장의 증거가 아닙니다. 안 아프다고 헛한 게 아니고, 죽을 것 같다고 더 큰 것도 아닙니다. 기록이 늘고 있는지를 보세요.", s: null },
-    { t: "무게를 못 올리겠으면 횟수를 먼저 늘려보세요. 30kg 8회가 30kg 10회가 되면 그것도 볼륨 증가입니다.", s: null }
+    { t: "그립 하나 바꿨을 뿐인데 크는 근육이 달라진다. 언더는 이두, 오버는 상완근, 뉴트럴은 상완요골근.", s: null },
+    { t: "삼두 장두는 어깨관절을 지나는 유일한 갈래다. 팔을 머리 위로 올려야 제대로 늘어난다. 옆구리에 붙이면 외측두 차례다.", s: null },
+    { t: "어시스트 풀업의 kg은 도움받는 무게다. 그 숫자가 줄었다면, 네가 강해진 거다.", s: null },
+    { t: "무게 안 올라가도 된다. 지난주보다 1개 더 했으면 그게 성장이다. 몸은 매주 신기록을 세우라고 만들어지지 않았다.", s: null },
+    { t: "근육통은 성장의 증거가 아니다. 안 아파도 크고 있다. 감각 말고 기록을 봐라.", s: null },
+    { t: "무게를 못 올리겠으면 횟수를 늘려라. 30kg 8회가 10회가 되면, 그것도 앞으로 간 거다.", s: null },
+    { t: "오늘의 마지막 한 개가 내일의 첫 개가 된다. 그 한 개 때문에 온 거다.", s: null },
+    { t: "핑계는 근육이 되지 않는다. 헬스장에 들어온 순간 이미 절반은 이겼다.", s: null }
   ];
 
   var D = {
@@ -1420,6 +1468,102 @@ __PWA_HEAD__
   }
   $("#stex").onchange = drawStats;
 
+  /* ---------- 동기부여 ---------- */
+  var HYPE = [
+    "오늘 안 하면\n어제의 나한테 진다.",
+    "무게는 거짓말을 안 한다.\n든 만큼만 는다.",
+    "지금 이 세트가\n다음 달의 몸을 만든다.",
+    "핑계는 근육이 되지 않는다.",
+    "포기하고 싶을 때가\n딱 한 개 더 할 때다.",
+    "남들 쉬는 날에 하는 게\n격차가 된다.",
+    "어제보다 2.5kg.\n그거면 충분하다.",
+    "몸은 기억한다.\n오늘 뺀 것도, 오늘 채운 것도.",
+    "헬스장에 들어온 순간\n이미 절반은 이겼다.",
+    "피곤한 건 핑계가 아니라 조건이다.\n조건 안에서 한다.",
+    "오늘의 마지막 한 개가\n내일의 첫 개가 된다.",
+    "3분할 한 바퀴.\n그게 쌓여서 1년이 된다.",
+    "기록이 늘었으면\n그날은 이긴 거다.",
+    "쉬는 90초 안에\n다시 마음을 먹어라.",
+    "근육은 협상하지 않는다.\n한 만큼만 준다.",
+    "여기까지 왔으면\n한 세트만 더."
+  ];
+  var hypeIdx = Math.floor(Math.random() * HYPE.length);
+  function drawHype() {
+    $("#hypeT").textContent = HYPE[hypeIdx % HYPE.length];
+  }
+  $("#hype").onclick = function () { hypeIdx++; drawHype(); };
+
+  function monday(d) { var x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); x.setHours(0,0,0,0); return x; }
+
+  function drawFire() {
+    drawHype();
+    var today = new Date(), thisMon = monday(today);
+    var lastMon = new Date(thisMon); lastMon.setDate(lastMon.getDate() - 7);
+
+    function weekAgg(from, to) {
+      var days = 0, v = 0, sets = 0;
+      Object.keys(D.workouts).forEach(function (d) {
+        var dd = pd(d);
+        if (dd < from || dd >= to) return;
+        var w = D.workouts[d], sv = vol(d), ns = 0;
+        w.ex.forEach(function (e) { ns += e.sets.length; });
+        if (ns || w.cardio.length) days++;
+        v += sv; sets += ns;
+      });
+      return { days: days, v: v, sets: sets };
+    }
+    var nextMon = new Date(thisMon); nextMon.setDate(nextMon.getDate() + 7);
+    var cur7 = weekAgg(thisMon, nextMon), prev7 = weekAgg(lastMon, thisMon);
+
+    $("#f1").textContent = cur7.days + "일";
+    $("#f2").textContent = cur7.v >= 1000 ? fmt(cur7.v / 1000) + "t" : fmt(cur7.v) + "kg";
+    $("#f3").textContent = cur7.sets + "세트";
+
+    var dEl = $("#f2d");
+    if (prev7.v > 0 && cur7.v > 0) {
+      var pct = Math.round((cur7.v - prev7.v) / prev7.v * 100);
+      dEl.textContent = (pct > 0 ? "▲ " : pct < 0 ? "▼ " : "") + Math.abs(pct) + "%";
+      dEl.className = "dd " + (pct >= 0 ? "up" : "down");
+    } else { dEl.textContent = ""; dEl.className = "dd"; }
+
+    // 최근 신기록 — 마지막 세션에서 그 종목의 역대 최고 실부하를 갱신했는지
+    var box = $("#prlist"); box.innerHTML = "";
+    var best = {}, prs = [];
+    Object.keys(D.workouts).sort().forEach(function (d) {
+      var bw = bwAt(d);
+      D.workouts[d].ex.forEach(function (e) {
+        if (!e.sets.length) return;
+        var mx = Math.max.apply(null, e.sets.map(function (s) { return eff(e.name, s.w, bw); }));
+        if (best[e.name] === undefined) { best[e.name] = mx; return; }   // 첫 기록은 PR로 치지 않는다
+        if (mx > best[e.name]) { prs.push({ name: e.name, w: mx, d: d }); best[e.name] = mx; }
+      });
+    });
+    prs.reverse();
+    if (!prs.length) {
+      box.appendChild(el("div", "empty-s", "아직 신기록이 없습니다.\n같은 종목을 두 번 이상 기록하면 여기 뜹니다."));
+    } else {
+      prs.slice(0, 5).forEach(function (p) {
+        var r = el("div", "pr-item");
+        r.appendChild(el("b", "", p.name));
+        r.appendChild(el("span", "w", fmt(p.w) + "kg"));
+        r.appendChild(el("span", "d", p.d.slice(5)));
+        box.appendChild(r);
+      });
+    }
+
+    // 누적
+    var total = 0, ndays = 0;
+    Object.keys(D.workouts).forEach(function (d) {
+      var v = vol(d);
+      if (v || D.workouts[d].cardio.length) ndays++;
+      total += v;
+    });
+    $("#fTotal").textContent = total >= 1000 ? fmt(total / 1000) + " t" : fmt(total) + " kg";
+    $("#fTotalSub").textContent = ndays
+      ? ndays + "일 동안 · 하루 평균 " + fmt(total / ndays / 1000) + "t"
+      : "첫 기록을 남겨보세요";
+  }
+
   /* ---------- 설정 / 백업 ---------- */
   function drawRest() {
     $("#autorest").classList.toggle("on", !!D.settings.autoRest);
@@ -1536,6 +1680,7 @@ __PWA_HEAD__
   function fillSel(id, arr) { var s = $(id); s.innerHTML = ""; arr.forEach(function (v) { var o = el("option", "", v); o.value = v; s.appendChild(o); }); }
   function render() {
     if (page === "lift") { drawLifts(); var r = $("#rtsel"), k = r.value; fillSel("#rtsel", Object.keys(D.routines)); if (Object.keys(D.routines).indexOf(k) >= 0) r.value = k; }
+    else if (page === "fire") drawFire();
     else if (page === "diet") drawDiet();
     else if (page === "body") drawBody();
     else if (page === "stats") { drawStats(); drawRest(); }
