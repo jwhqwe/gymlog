@@ -241,6 +241,14 @@ __PWA_HEAD__
   .tipv { font-size: 13px; }
   .tiphint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 4px; }
 
+  .goal { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .goal-t { display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .goal-t b { font-family: var(--display); font-weight: 400; font-size: 15px; color: var(--ink); }
+  .goal-s { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  .pbar { height: 8px; border-radius: 4px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; margin-top: 6px; }
+  .pbar i { display: block; height: 100%; width: 0; background: var(--red); border-radius: 4px; transition: width .25s; }
+  .pbar i.done { background: var(--good); }
+
   .macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .macro { text-align: center; }
   .macro .v { font-size: 18px; letter-spacing: -.01em; }
@@ -379,6 +387,14 @@ __PWA_HEAD__
           <div class="macro"><div class="v" id="tp" style="color:var(--red)">0</div><div class="k">단백 G</div></div>
           <div class="macro"><div class="v" id="tf" style="color:var(--good)">0</div><div class="k">지방 G</div></div>
         </div>
+        <div class="goal">
+          <div class="goal-t">
+            <span>단백질 목표</span>
+            <b id="pgoal">— / —</b>
+          </div>
+          <div class="pbar"><i id="pbar"></i></div>
+          <div class="goal-s" id="pgoalsub">—</div>
+        </div>
       </div>
       <div class="card">
         <p class="h">음식 추가</p>
@@ -441,6 +457,19 @@ __PWA_HEAD__
           <button class="sw" id="autorest" role="switch"><i></i></button>
         </div>
         <div class="chips" id="restpick" style="margin-top:10px"></div>
+
+        <div class="row-b" style="margin-top:4px">
+          <div>
+            <div class="dt">체중</div>
+            <div class="vs" id="bwsub">보조·체중 종목의 실부하 계산에 쓰입니다</div>
+          </div>
+          <input id="bwset" type="text" inputmode="decimal" style="width:88px;text-align:center;flex:none" />
+        </div>
+        <div class="row-b">
+          <div><div class="dt">단백질 목표</div><div class="vs" id="psub">—</div></div>
+        </div>
+        <div class="chips" id="ppick"></div>
+
         <div class="brow">
           <button class="btn ghost sm" id="expjson">백업 내보내기</button>
           <button class="btn ghost sm" id="impjson">백업 불러오기</button>
@@ -643,13 +672,17 @@ __PWA_HEAD__
   var D = {
     workouts: {}, diet: {}, body: {}, routines: {}, customEx: {},
     notes: SEED.map(function (n) { return { title: n[0], body: n[1] }; }),
-    settings: { autoRest: true, restSec: 90 }
+    settings: { autoRest: true, restSec: 90, bw: 72, proteinPerKg: 1.8 }
   };
   try {
     var raw = localStorage.getItem(KEY);
     if (raw) { var p = JSON.parse(raw); for (var k in D) if (p[k] !== undefined) D[k] = p[k];
-      if (!D.settings) D.settings = { autoRest: true, restSec: 90 }; }
+      if (!D.settings) D.settings = {}; }
   } catch (e) {}
+  if (D.settings.restSec === undefined) D.settings.restSec = 90;
+  if (D.settings.autoRest === undefined) D.settings.autoRest = true;
+  if (D.settings.bw === undefined) D.settings.bw = 72;
+  if (D.settings.proteinPerKg === undefined) D.settings.proteinPerKg = 1.8;
   // 기본 루틴 시드. 버전을 올리면 새로 추가된 루틴만 들어간다.
   // (이미 있는 이름은 건드리지 않아 사용자가 수정한 루틴이 덮어써지지 않는다)
   var seeded = false;
@@ -684,19 +717,43 @@ __PWA_HEAD__
   function exList(p) { return (EX[p] || []).concat(D.customEx[p] || []); }
   function allEx() { var o = []; for (var p in EX) o = o.concat(exList(p)); return o; }
   function partOf(n) { for (var p in EX) if (exList(p).indexOf(n) >= 0) return p; return "기타"; }
-  /* 보조(어시스트) 종목: kg이 '나를 도와주는 무게'라서 낮을수록 잘한 것.
-     무게×횟수를 볼륨으로 치면 정반대로 나오므로 볼륨·PR·1RM 계산에서 제외하고
-     '최저 보조'로 따로 읽는다. */
-  var ASSIST = { "Assisted Pull-up": 1, "어시스트 풀업": 1, "어시스트 딥스": 1 };
-  function isAssist(name) { return !!ASSIST[name]; }
-  function minAssist(e) { return Math.min.apply(null, e.sets.map(function (s) { return s.w; })); }
+  /* 부하 방식 — 입력한 kg이 곧 부하가 아닌 종목들이 있다.
+       assist : 기계가 도와주는 무게 → 실부하 = 체중 − 보조
+       bw     : 내 몸을 드는 종목   → 실부하 = 체중 + 추가무게
+     이렇게 해야 보조를 줄인 게 '부하 증가'로 잡히고 볼륨에 정상 합산된다. */
+  var LOADTYPE = {
+    "Assisted Pull-up": "assist", "어시스트 풀업": "assist", "어시스트 딥스": "assist",
+    "풀업": "bw", "딥스": "bw"
+  };
+  function loadType(name) { return LOADTYPE[name] || "normal"; }
+
+  // 해당 날짜 기준 체중 — 인바디 기록을 우선 쓰고, 없으면 설정값
+  function bwAt(d) {
+    var prev = Object.keys(D.body).filter(function (x) {
+      return x <= d && D.body[x].weight !== undefined;
+    }).sort();
+    if (prev.length) return D.body[prev[prev.length - 1]].weight;
+    var any = Object.keys(D.body).filter(function (x) {
+      return D.body[x].weight !== undefined;
+    }).sort();
+    if (any.length) return D.body[any[0]].weight;   // 이전 기록이 없으면 가장 이른 기록
+    return D.settings.bw || 72;
+  }
+
+  // 실제로 몸이 감당한 무게
+  function eff(name, w, bw) {
+    var t = loadType(name);
+    if (t === "assist") return Math.max(0, bw - w);
+    if (t === "bw") return bw + w;
+    return w;
+  }
 
   function vol(d) {
     var t = 0, w = D.workouts[d];
     if (!w) return 0;
+    var bw = bwAt(d);
     w.ex.forEach(function (e) {
-      if (isAssist(e.name)) return;   // 보조 종목은 볼륨에 넣지 않는다
-      e.sets.forEach(function (s) { t += s.w * s.r; });
+      e.sets.forEach(function (s) { t += eff(e.name, s.w, bw) * s.r; });
     });
     return t;
   }
@@ -904,19 +961,18 @@ __PWA_HEAD__
       var g = el("div", "exg"), h = el("div", "exh");
       h.appendChild(el("b", "", e.name));
       h.appendChild(el("span", "pt", e.part || partOf(e.name)));
-      var asst = isAssist(e.name);
-      if (asst) {
-        h.appendChild(el("span", "vol", e.sets.length + "세트 · 최저 보조 " + fmt(minAssist(e)) + "kg"));
-      } else {
-        var v = 0; e.sets.forEach(function (s) { v += s.w * s.r; });
-        h.appendChild(el("span", "vol", e.sets.length + "세트 · " + fmt(v) + "kg"));
-      }
+      var lt = loadType(e.name), dbw = bwAt(cur);
+      var v = 0; e.sets.forEach(function (s) { v += eff(e.name, s.w, dbw) * s.r; });
+      h.appendChild(el("span", "vol", e.sets.length + "세트 · " + fmt(v) + "kg"));
       g.appendChild(h);
       e.sets.forEach(function (s, si) {
         var r = el("div", "st");
         r.appendChild(el("div", "n", String(si + 1)));
-        r.appendChild(el("b", "", (asst ? "보조 " : "") + fmt(s.w) + "kg"));
-        r.appendChild(el("span", "", "× " + s.r + "회"));
+        r.appendChild(el("b", "", fmt(eff(e.name, s.w, dbw)) + "kg"));
+        var tail = "× " + s.r + "회";
+        if (lt === "assist") tail += " · 보조 " + fmt(s.w);
+        else if (lt === "bw") tail += " · 체중" + (s.w ? " +" + fmt(s.w) : "");
+        r.appendChild(el("span", "", tail));
         var x = el("button", "x", "×");
         x.onclick = function () { e.sets.splice(si, 1); if (!e.sets.length) day.ex.splice(ei, 1); save(); render(); drawCal(); };
         r.appendChild(x); g.appendChild(r);
@@ -997,6 +1053,16 @@ __PWA_HEAD__
     var m = (D.diet[cur] || { meals: [] }).meals, tk = 0, tc = 0, tp = 0, tf = 0;
     m.forEach(function (x) { tk += x.kcal; tc += x.c; tp += x.p; tf += x.f; });
     $("#tk").textContent = fmt(tk); $("#tc").textContent = fmt(tc); $("#tp").textContent = fmt(tp); $("#tf").textContent = fmt(tf);
+
+    // 단백질 목표 = 그날 기준 체중 × 계수(g/kg)
+    var bw = bwAt(cur), per = D.settings.proteinPerKg || 1.8, goal = Math.round(bw * per);
+    var pct = goal ? Math.min(100, tp / goal * 100) : 0;
+    $("#pgoal").textContent = fmt(tp) + " / " + goal + "g";
+    $("#pbar").style.width = pct + "%";
+    $("#pbar").classList.toggle("done", tp >= goal && goal > 0);
+    var left = goal - tp;
+    $("#pgoalsub").textContent = "체중 " + fmt(bw) + "kg × " + per + "g/kg" +
+      (left > 0 ? " · " + fmt(left) + "g 남음" : " · 달성 ✓");
     var box = $("#meals"); box.innerHTML = "";
     if (!m.length) { box.appendChild(el("div", "empty-s", "오늘 기록한 음식이 없습니다.")); return; }
     SLOTS.forEach(function (s) {
@@ -1238,43 +1304,27 @@ __PWA_HEAD__
     $("#k1").textContent = wkDays + "일";
     $("#k2").textContent = fmt(wkVol / 1000);
     $("#k3").textContent = Object.keys(D.workouts).filter(function (x) { var w = D.workouts[x]; return w.ex.length || w.cardio.length; }).length;
-    var ex = sel.value, asst = isAssist(ex), pts = [], pw = 0, p1 = 0, pv = 0, best = Infinity;
+    // 실부하 기준이라 보조 종목도 최고무게·1RM·볼륨이 그대로 의미를 가진다
+    var ex = sel.value, lt = loadType(ex), pts = [], pw = 0, p1 = 0, pv = 0;
     Object.keys(D.workouts).sort().forEach(function (d3) {
+      var bw = bwAt(d3);
       D.workouts[d3].ex.forEach(function (e) {
         if (e.name !== ex || !e.sets.length) return;
-        if (asst) {
-          // 보조 종목: 그날의 '최저 보조 무게'를 추적한다 (낮을수록 발전)
-          var mn = minAssist(e);
-          best = Math.min(best, mn);
-          pts.push([d3, mn]);
-          return;
-        }
         var v = 0;
-        e.sets.forEach(function (s) { v += s.w * s.r; pw = Math.max(pw, s.w); p1 = Math.max(p1, e1rm(s.w, s.r)); });
+        e.sets.forEach(function (s) {
+          var L = eff(ex, s.w, bw);
+          v += L * s.r; pw = Math.max(pw, L); p1 = Math.max(p1, e1rm(L, s.r));
+        });
         pv = Math.max(pv, v); pts.push([d3, v]);
       });
     });
-    // 보조 종목은 볼륨·1RM이 의미가 없으므로 지표 자체를 바꿔 단다
-    $("#prk1").textContent = asst ? "최저 보조" : "최고 무게";
-    $("#prk2").textContent = asst ? "최근 보조" : "추정 1RM";
-    $("#prk3").textContent = asst ? "변화" : "최고 볼륨";
-    if (asst) {
-      var last = pts.length ? pts[pts.length - 1][1] : 0;
-      var first = pts.length ? pts[0][1] : 0;
-      var diff = last - first;
-      $("#pr1").textContent = pts.length ? fmt(best) + "kg" : "—";
-      $("#pr2").textContent = pts.length ? fmt(last) + "kg" : "—";
-      $("#pr3").textContent = pts.length < 2 ? "—" : (diff < 0 ? "↓ " : diff > 0 ? "↑ " : "") + fmt(Math.abs(diff)) + "kg";
-      $("#pr3").style.color = pts.length < 2 ? "" : (diff < 0 ? "var(--good)" : diff > 0 ? "var(--muted)" : "");
-      $("#chTitle").textContent = "보조 무게 추이 — 낮을수록 좋음";
-    } else {
-      $("#pr1").textContent = pw ? fmt(pw) + "kg" : "—";
-      $("#pr2").textContent = p1 ? Math.round(p1) + "kg" : "—";
-      $("#pr3").textContent = pv ? fmt(pv) + "kg" : "—";
-      $("#pr3").style.color = "";
-      $("#chTitle").textContent = "종목별 추이";
-    }
-    lineChart("#chVol", pts, asst ? "var(--good)" : "var(--red)");
+    $("#pr1").textContent = pw ? fmt(pw) + "kg" : "—";
+    $("#pr2").textContent = p1 ? Math.round(p1) + "kg" : "—";
+    $("#pr3").textContent = pv ? fmt(pv) + "kg" : "—";
+    $("#chTitle").textContent = lt === "normal"
+      ? "종목별 추이"
+      : "종목별 추이 — 체중 " + fmt(bwAt(iso(new Date()))) + "kg 기준 실부하";
+    lineChart("#chVol", pts, "var(--red)");
     var cnt = {}, st = new Date(); st.setDate(st.getDate() - 6);
     for (var d5 in D.workouts) {
       var dd5 = pd(d5);
@@ -1300,7 +1350,30 @@ __PWA_HEAD__
       b.onclick = function () { D.settings.restSec = s; save(); drawRest(); startRest(s); };
       c.appendChild(b);
     });
+
+    // 체중 — 인바디에 기록이 있으면 그쪽이 우선이라는 걸 알려준다
+    var hasBody = Object.keys(D.body).some(function (x) { return D.body[x].weight !== undefined; });
+    $("#bwset").value = D.settings.bw || 72;
+    $("#bwset").disabled = hasBody;
+    $("#bwsub").textContent = hasBody
+      ? "인바디 기록(" + fmt(bwAt(iso(new Date()))) + "kg)을 자동으로 씁니다"
+      : "보조·체중 종목의 실부하 계산에 쓰입니다";
+
+    var per = D.settings.proteinPerKg || 1.8;
+    $("#psub").textContent = "체중 " + fmt(bwAt(iso(new Date()))) + "kg × " + per +
+      "g/kg = " + Math.round(bwAt(iso(new Date())) * per) + "g";
+    var p = $("#ppick"); p.innerHTML = "";
+    [1.6, 1.8, 2.0, 2.2].forEach(function (v) {
+      var b = el("button", "chip" + (v === per ? " on" : ""), v + "g/kg");
+      b.onclick = function () { D.settings.proteinPerKg = v; save(); drawRest(); };
+      p.appendChild(b);
+    });
   }
+  $("#bwset").onchange = function () {
+    var v = num(this.value);
+    if (v > 0) { D.settings.bw = v; save(); }
+    drawRest();
+  };
   $("#autorest").onclick = function () { D.settings.autoRest = !D.settings.autoRest; save(); drawRest(); };
   function dl(name, text, type) {
     var b = new Blob([text], { type: type || "application/json" });
