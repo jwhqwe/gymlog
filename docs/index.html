@@ -504,10 +504,14 @@
 
   var EX = {
     "가슴": ["벤치프레스", "인클라인 벤치프레스", "덤벨프레스", "인클라인 덤벨프레스", "체스트프레스 머신", "케이블 플라이", "펙덱 플라이", "딥스"],
-    "등": ["데드리프트", "랫풀다운", "풀업", "바벨로우", "덤벨로우", "시티드로우", "티바로우", "페이스풀"],
-    "하체": ["스쿼트", "레그프레스", "런지", "레그익스텐션", "레그컬", "루마니안 데드리프트", "힙쓰러스트", "카프레이즈"],
-    "어깨": ["오버헤드프레스", "숄더프레스 머신", "사이드 레터럴 레이즈", "프론트 레이즈", "리어델트 플라이", "업라이트로우", "슈러그"],
-    "팔": ["바벨컬", "덤벨컬", "해머컬", "프리처컬", "트라이셉스 익스텐션", "케이블 푸시다운", "스컬크러셔"],
+    "등": ["랫풀다운", "Assisted Pull-up", "Arm Pulldown", "D.Y Row", "데드리프트", "풀업",
+           "바벨로우", "덤벨로우", "시티드로우", "티바로우", "페이스풀"],
+    "하체": ["핵 스쿼트", "레그프레스", "레그익스텐션", "시티드 레그컬", "스쿼트", "런지", "레그컬",
+             "루마니안 데드리프트", "힙쓰러스트", "카프레이즈"],
+    "어깨": ["덤벨 레터럴 레이즈", "케이블 레터럴 레이즈", "리어델트 플라이", "오버헤드프레스",
+             "숄더프레스 머신", "프론트 레이즈", "업라이트로우", "슈러그"],
+    "팔": ["바벨컬", "인클라인 덤벨컬", "덤벨컬", "해머컬", "리버스 그립 컬", "프리처컬",
+           "케이블 푸시다운", "케이블 오버헤드 익스텐션", "트라이셉스 익스텐션", "스컬크러셔"],
     "복근": ["크런치", "행잉 레그레이즈", "플랭크", "케이블 크런치", "러시안 트위스트"],
     "기타": []
   };
@@ -518,7 +522,9 @@
 
   var MNAME = {
     chest: "대흉근", delt_f: "전면삼각근", delt_s: "측면삼각근", delt_r: "후면삼각근",
-    biceps: "이두근", triceps: "삼두근", forearm: "전완근", abs: "복직근", oblique: "복사근",
+    biceps: "이두근", brachialis: "상완근", brachiorad: "상완요골근",
+    triceps: "삼두근", triceps_long: "삼두 장두", triceps_lat: "삼두 외측두",
+    forearm: "전완근", abs: "복직근", oblique: "복사근",
     serratus: "전거근", lats: "광배근", traps: "승모근", erector: "척추기립근", glutes: "둔근",
     quads: "대퇴사두근", hams: "햄스트링", calves: "종아리", adductors: "내전근",
     hip_flexor: "고관절 굴곡근"
@@ -530,7 +536,13 @@
     delt_s: ["shoulder-side-left", "shoulder-side-right"],
     delt_r: ["deltoid-rear-left", "deltoid-rear-right"],
     biceps: ["biceps-left", "biceps-right"],
+    // 상완근은 이두 아래에 깔려 있어 도해에 별도 부위가 없다 → 이두 영역으로 표시하고 이름으로 구분
+    brachialis: ["biceps-left", "biceps-right"],
+    // 상완요골근은 전완 위쪽(팔꿈치 근처) → 전완 영역
+    brachiorad: ["forearm-left", "forearm-right", "forearm-extensors-left", "forearm-extensors-right"],
     triceps: ["triceps-long-left", "triceps-lateral-left", "triceps-long-right", "triceps-lateral-right"],
+    triceps_long: ["triceps-long-left", "triceps-long-right"],
+    triceps_lat: ["triceps-lateral-left", "triceps-lateral-right"],
     forearm: ["forearm-left", "forearm-right", "forearm-flexors-left", "forearm-extensors-left",
               "forearm-flexors-right", "forearm-extensors-right"],
     abs: ["abs-upper-left", "abs-upper-right", "abs-lower-left", "abs-lower-right"],
@@ -562,6 +574,10 @@
     "데드리프트": [["erector", "glutes", "hams"], ["traps", "lats", "quads", "forearm"]],
     "랫풀다운": [["lats"], ["biceps", "traps"]],
     "풀업": [["lats"], ["biceps", "traps", "forearm"]],
+    "Assisted Pull-up": [["lats"], ["biceps", "traps", "forearm"]],
+    // 스트레이트 암 풀다운 — 팔을 편 채 당겨서 광배 고립, 삼두 장두가 함께 쓰인다
+    "Arm Pulldown": [["lats"], ["triceps_long", "abs"]],
+    "D.Y Row": [["lats", "traps"], ["biceps", "delt_r"]],
     "바벨로우": [["lats", "traps"], ["biceps", "erector"]],
     "덤벨로우": [["lats"], ["biceps", "traps"]],
     "시티드로우": [["lats", "traps"], ["biceps"]],
@@ -570,25 +586,32 @@
     "스쿼트": [["quads", "glutes"], ["hams", "erector", "abs", "adductors"]],
     "레그프레스": [["quads", "glutes"], ["hams", "adductors"]],
     "런지": [["quads", "glutes"], ["hams", "adductors"]],
+    "핵 스쿼트": [["quads", "glutes"], ["hams", "adductors"]],
     "레그익스텐션": [["quads"], []],
     "레그컬": [["hams"], ["calves"]],
+    "시티드 레그컬": [["hams"], ["calves"]],
     "루마니안 데드리프트": [["hams", "glutes"], ["erector"]],
     "힙쓰러스트": [["glutes"], ["hams"]],
     "카프레이즈": [["calves"], []],
     "오버헤드프레스": [["delt_f", "delt_s"], ["triceps", "traps", "abs"]],
     "숄더프레스 머신": [["delt_f", "delt_s"], ["triceps"]],
-    "사이드 레터럴 레이즈": [["delt_s"], ["traps"]],
+    "덤벨 레터럴 레이즈": [["delt_s"], ["traps"]],
+    "케이블 레터럴 레이즈": [["delt_s"], ["traps"]],
     "프론트 레이즈": [["delt_f"], []],
     "리어델트 플라이": [["delt_r"], ["traps"]],
     "업라이트로우": [["delt_s", "traps"], ["biceps"]],
     "슈러그": [["traps"], ["forearm"]],
-    "바벨컬": [["biceps"], ["forearm"]],
-    "덤벨컬": [["biceps"], ["forearm"]],
-    "해머컬": [["biceps", "forearm"], []],
-    "프리처컬": [["biceps"], []],
-    "트라이셉스 익스텐션": [["triceps"], []],
-    "케이블 푸시다운": [["triceps"], []],
-    "스컬크러셔": [["triceps"], []],
+    // 팔 — 그립에 따라 타겟이 갈린다
+    "바벨컬": [["biceps"], ["brachialis", "forearm"]],
+    "인클라인 덤벨컬": [["biceps"], ["brachialis"]],
+    "덤벨컬": [["biceps"], ["brachialis", "forearm"]],
+    "해머컬": [["brachiorad", "brachialis"], ["biceps"]],
+    "리버스 그립 컬": [["brachialis", "brachiorad"], ["biceps"]],
+    "프리처컬": [["biceps"], ["brachialis"]],
+    "케이블 푸시다운": [["triceps_lat"], ["triceps_long"]],
+    "케이블 오버헤드 익스텐션": [["triceps_long"], ["triceps_lat"]],
+    "트라이셉스 익스텐션": [["triceps_long"], ["triceps_lat"]],
+    "스컬크러셔": [["triceps_long"], ["triceps_lat"]],
     "크런치": [["abs"], []],
     "행잉 레그레이즈": [["abs"], ["oblique", "hip_flexor", "forearm"]],
     "플랭크": [["abs"], ["oblique", "delt_f"]],
@@ -607,8 +630,17 @@
     ["휴식 시간 가이드", "· 고중량 컴파운드 (1~5회): 3~5분\n· 중량 (6~12회): 2~3분\n· 아이솔레이션 / 고반복: 1~2분\n\n휴식을 너무 줄이면 다음 세트 수행 능력이 떨어져 총 볼륨이 감소한다. 숨이 정리되고 해당 근육이 회복된 느낌이 들면 다음 세트."],
     ["주요 근육 부위", "· 가슴: 대흉근 (상부/중부/하부)\n· 등: 광배근, 승모근, 능형근, 척추기립근\n· 어깨: 삼각근 (전면/측면/후면)\n· 팔: 이두근, 삼두근, 전완근\n· 하체: 대퇴사두근, 햄스트링, 둔근, 종아리\n· 코어: 복직근, 복사근, 복횡근\n\n밀기(가슴·어깨·삼두) / 당기기(등·이두) / 하체로 나누는 PPL 분할이 대표적."],
     ["단백질과 식단 기본", "· 단백질: 근비대 목적 시 체중 1kg당 약 1.6~2.2g이 흔히 권장된다.\n· 칼로리: 증량은 소폭 잉여, 감량은 소폭 결손. 급격한 조절은 근손실 위험.\n· 탄수화물: 훈련 강도를 유지하는 주 연료.\n· 지방: 호르몬 등 기본 기능. 총 칼로리의 20~30% 선.\n\n일반적인 가이드라인이며 개인 상황에 따라 다르다."],
-    ["자세의 기본 원칙", "· 가동범위를 충분히 쓴다. 반동으로 무게만 늘리는 건 손해.\n· 목표 근육에 긴장이 유지되는지 확인.\n· 컴파운드는 중립 척추 유지. 허리가 말리면 무게를 줄인다.\n· 내리는 구간을 통제해서 천천히.\n· 날카로운 통증은 즉시 중단 신호. 근육통과 구분할 것."]
+    ["자세의 기본 원칙", "· 가동범위를 충분히 쓴다. 반동으로 무게만 늘리는 건 손해.\n· 목표 근육에 긴장이 유지되는지 확인.\n· 컴파운드는 중립 척추 유지. 허리가 말리면 무게를 줄인다.\n· 내리는 구간을 통제해서 천천히.\n· 날카로운 통증은 즉시 중단 신호. 근육통과 구분할 것."],
+    ["팔 — 그립이 타겟을 바꾼다", "위팔 앞쪽은 하나가 아니라 세 근육이고, 그립에 따라 주로 쓰이는 놈이 달라진다.\n\n1. 이두근 (상완이두근)\n   · 겉으로 보이는 알통. 손바닥이 위를 보는 언더그립에서 가장 강하게 쓰인다.\n   · 바벨컬, 인클라인 덤벨컬\n   · 인클라인은 팔이 몸 뒤로 가서 이두 장두가 늘어난 상태로 시작 → 스트레치 자극\n\n2. 상완근 (Brachialis)\n   · 이두 '아래에 깔려 있는' 근육. 이걸 키우면 이두를 밑에서 밀어올려 팔이 두꺼워 보인다.\n   · 리버스 그립 컬 (오버그립)\n   · 이두가 불리한 그립이라 상완근이 일을 더 한다\n\n3. 상완요골근 (Brachioradialis)\n   · 전완 위쪽(엄지 쪽) 굵은 근육.\n   · 해머컬 (뉴트럴 그립)\n\n정리: 언더그립 → 이두 / 오버그립 → 상완근 / 뉴트럴 → 상완요골근"],
+    ["삼두 — 장두와 외측두", "삼두근은 세 갈래(장두·외측두·내측두)이고, 팔의 각도가 어느 갈래를 쓰는지 정한다.\n\n1. 장두 (Long head)\n   · 유일하게 어깨관절을 지나간다 → 팔을 머리 위로 올려야 늘어나면서 강하게 쓰인다.\n   · 케이블 오버헤드 익스텐션, 스컬크러셔\n   · 삼두 부피의 대부분 → 팔 두께에 가장 크게 기여\n\n2. 외측두 (Lateral head)\n   · 팔 바깥쪽. 팔을 몸 옆에 붙인 자세에서 잘 쓰인다.\n   · 케이블 푸시다운\n   · 팔의 '말굽' 실루엣을 만든다\n\n정리: 팔을 위로 → 장두 / 팔을 옆구리에 → 외측두. 둘 다 해야 고르게 큰다."]
   ];
+
+  var SEED_ROUTINES = {
+    "등 + 삼두": ["Arm Pulldown", "Assisted Pull-up", "랫풀다운", "D.Y Row",
+                  "케이블 레터럴 레이즈", "덤벨 레터럴 레이즈", "케이블 푸시다운", "트라이셉스 익스텐션"],
+    "하체 + 어깨": ["시티드 레그컬", "핵 스쿼트", "레그프레스", "레그익스텐션",
+                    "덤벨 레터럴 레이즈", "케이블 레터럴 레이즈", "리어델트 플라이"]
+  };
 
   var D = {
     workouts: {}, diet: {}, body: {}, routines: {}, customEx: {},
@@ -620,6 +652,11 @@
     if (raw) { var p = JSON.parse(raw); for (var k in D) if (p[k] !== undefined) D[k] = p[k];
       if (!D.settings) D.settings = { autoRest: true, restSec: 90 }; }
   } catch (e) {}
+  // 기본 루틴은 한 번만 넣는다 (지운 뒤 다시 살아나지 않도록 플래그로 표시)
+  if (!D.settings.routinesSeeded) {
+    for (var rn in SEED_ROUTINES) if (!D.routines[rn]) D.routines[rn] = SEED_ROUTINES[rn];
+    D.settings.routinesSeeded = true;
+  }
   var warned = false;
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(D)); }
