@@ -236,6 +236,22 @@ __PWA_HEAD__
   .st .x:active { background: var(--red-soft); color: var(--red); }
   .empty-s { text-align: center; color: var(--muted); font-size: 13px; padding: 26px 0; }
 
+  /* ---- 유산소 카드 ---- */
+  .run {
+    background: var(--ink); color: var(--paper); border-radius: var(--r);
+    padding: 16px 16px 14px; margin-bottom: 8px; position: relative;
+  }
+  .run .rt { display: flex; align-items: center; gap: 7px; font-size: 12px; opacity: .7; font-weight: 700; }
+  .run .rbig { font-family: var(--display); font-weight: 400; font-size: 44px; line-height: 1.1; margin-top: 6px; }
+  .run .rbig i { font-size: 17px; font-style: normal; opacity: .6; margin-left: 4px; }
+  .run .rgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.15); padding-top: 12px; }
+  .run .rg .v { font-family: var(--display); font-weight: 400; font-size: 18px; }
+  .run .rg .k { font-size: 10px; opacity: .55; font-weight: 700; letter-spacing: .04em; margin-top: 2px; }
+  .run .rx { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 8px;
+    color: rgba(255,255,255,.5); font-size: 16px; display: grid; place-items: center; }
+  .run .rx:active { background: rgba(255,255,255,.15); color: #fff; }
+
   .rest { position: fixed; left: 50%; transform: translateX(-50%);
     bottom: calc(66px + env(safe-area-inset-bottom)); width: min(492px, calc(100% - 28px));
     background: var(--ink); color: var(--paper); border-radius: 14px; padding: 10px 12px;
@@ -250,12 +266,37 @@ __PWA_HEAD__
 
   .tabs { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px;
     background: color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter: saturate(1.6) blur(14px);
-    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(6, 1fr);
+    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr);
     padding-bottom: env(safe-area-inset-bottom); z-index: 50; }
   .tab { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--muted); }
-  .tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-  .tab span { font-size: 10px; letter-spacing: -.03em; white-space: nowrap; }
+  .tab svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .tab span { font-size: 11px; letter-spacing: -.01em; white-space: nowrap; }
   .tab.on { color: var(--red); }
+
+  /* 몸 탭 안쪽 전환 (인바디 / 운동 통계) */
+  .seg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 11px; padding: 4px; margin-bottom: 12px; }
+  .sg { font-family: var(--display); font-weight: 400; font-size: 14px; padding: 8px 0;
+    border-radius: 8px; color: var(--muted); }
+  .sg.on { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+
+  /* ---- 홈 ---- */
+  .greet { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 12px; }
+  .greet b { font-family: var(--display); font-weight: 400; font-size: 24px; letter-spacing: -.01em; }
+  .greet span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .tile {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
+    padding: 14px; text-align: left; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 6px; min-height: 96px;
+  }
+  .tile:active { background: var(--paper); }
+  .tile.wide { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; }
+  .tile svg { width: 22px; height: 22px; stroke: var(--red); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .tile .tn { font-family: var(--display); font-weight: 400; font-size: 16px; }
+  .tile .tv { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: auto; }
+  .tile.wide .tn { flex: 1; }
+  .tile .go { font-size: 15px; color: var(--muted); }
 
   /* ---- 동기부여 ---- */
   .hype {
@@ -383,7 +424,7 @@ __PWA_HEAD__
   </div>
 
   <main>
-    <section class="page on" id="p-lift">
+    <section class="page" id="p-lift">
       <div class="card">
         <p class="h">세트 기록</p>
         <div class="chips" id="parts"></div>
@@ -456,11 +497,36 @@ __PWA_HEAD__
       <div id="lifts"></div>
     </section>
 
-    <section class="page" id="p-fire">
+    <section class="page on" id="p-home">
+      <div class="greet">
+        <b id="greetT">—</b>
+        <span id="greetS">—</span>
+      </div>
+
       <div class="hype" id="hype">
         <p id="hypeT">—</p>
         <div class="again">탭하면 다음</div>
       </div>
+
+      <div class="tiles">
+        <button class="tile" data-go="lift">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6M20 9v6M7 6v12M17 6v12M7 12h10"/></svg>
+          <div class="tn">운동</div><div class="tv" id="tvLift">—</div>
+        </button>
+        <button class="tile" data-go="diet">
+          <svg viewBox="0 0 24 24"><path d="M6 3v8a3 3 0 0 0 6 0V3M9 11v10M17 3c-1.5 2-2 4-2 6s.5 3 2 3 2-1 2-3-.5-4-2-6zM17 12v9"/></svg>
+          <div class="tn">식단</div><div class="tv" id="tvDiet">—</div>
+        </button>
+        <button class="tile" data-go="body">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M12 15l-3 6M12 15l3 6M6 10l6-1 6 1"/></svg>
+          <div class="tn">몸</div><div class="tv" id="tvBody">—</div>
+        </button>
+        <button class="tile" data-go="theory">
+          <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h8M8 11h5"/></svg>
+          <div class="tn">이론</div><div class="tv" id="tvTheory">—</div>
+        </button>
+      </div>
+
       <div class="card">
         <p class="h">이번 주</p>
         <div class="fstat"><span class="lb">운동한 날</span><span class="vv" id="f1">—</span></div>
@@ -512,6 +578,11 @@ __PWA_HEAD__
     </section>
 
     <section class="page" id="p-body">
+      <div class="seg2">
+        <button class="sg on" data-sec="inbody">인바디</button>
+        <button class="sg" data-sec="stats">운동 통계</button>
+      </div>
+      <div id="sec-inbody">
       <div class="card">
         <p class="h">변화 추이</p>
         <div class="chips" id="bmet"></div>
@@ -528,9 +599,8 @@ __PWA_HEAD__
       </div>
       <h2 class="sect-t">지난 측정</h2>
       <div class="card" id="bodylist"></div>
-    </section>
-
-    <section class="page" id="p-stats">
+      </div>
+      <div id="sec-stats" style="display:none">
       <div class="kpis">
         <div class="kpi"><div class="v" id="k1">0</div><div class="k">이번 주 운동</div></div>
         <div class="kpi"><div class="v" id="k2">0</div><div class="k">이번 주 볼륨 T</div></div>
@@ -578,6 +648,7 @@ __PWA_HEAD__
         <input type="file" id="fileimp" accept="application/json,.json" hidden />
         <p class="disc">데이터는 이 아이폰 안에만 저장됩니다. Safari 데이터를 지우면 사라지니 가끔 백업을 내보내 두세요.</p>
       </div>
+      </div>
     </section>
 
     <section class="page" id="p-theory">
@@ -610,11 +681,10 @@ __PWA_HEAD__
   </div>
 
   <nav class="tabs">
-    <button class="tab on" data-p="lift"><svg viewBox="0 0 24 24"><path d="M4 9v6M20 9v6M7 6v12M17 6v12M7 12h10"/></svg><span>운동</span></button>
-    <button class="tab" data-p="fire"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6 5 9a5 5 0 0 1-10 0c0-1.5.6-2.8 1.5-4 .4 1 1 1.6 1.7 1.8C10.5 7.5 11 5 12 3z"/></svg><span>동기부여</span></button>
+    <button class="tab on" data-p="home"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>홈</span></button>
+    <button class="tab" data-p="lift"><svg viewBox="0 0 24 24"><path d="M4 9v6M20 9v6M7 6v12M17 6v12M7 12h10"/></svg><span>운동</span></button>
     <button class="tab" data-p="diet"><svg viewBox="0 0 24 24"><path d="M6 3v8a3 3 0 0 0 6 0V3M9 11v10M17 3c-1.5 2-2 4-2 6s.5 3 2 3 2-1 2-3-.5-4-2-6zM17 12v9"/></svg><span>식단</span></button>
-    <button class="tab" data-p="body"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M12 15l-3 6M12 15l3 6M6 10l6-1 6 1"/></svg><span>인바디</span></button>
-    <button class="tab" data-p="stats"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l4-5 3 3 5-7"/></svg><span>통계</span></button>
+    <button class="tab" data-p="body"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M12 15l-3 6M12 15l3 6M6 10l6-1 6 1"/></svg><span>몸</span></button>
     <button class="tab" data-p="theory"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h8M8 11h5"/></svg><span>이론</span></button>
   </nav>
 </div>
@@ -836,10 +906,21 @@ __PWA_HEAD__
   var iso = function (dt) { return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0"); };
   var pd = function (s) { var a = s.split("-"); return new Date(+a[0], +a[1] - 1, +a[2]); };
   var fmt = function (n) { return (Math.round(n * 10) / 10).toLocaleString("ko-KR"); };
+  // 페이스 = 1km 당 걸린 시간. 러닝앱 표기(5'46")를 따른다.
+  function pace(km, min) {
+    if (!km || !min) return "—";
+    var per = min / km, m = Math.floor(per), s = Math.round((per - m) * 60);
+    if (s === 60) { m++; s = 0; }
+    return m + "'" + String(s).padStart(2, "0") + '"';
+  }
+  function hhmm(min) {
+    var h = Math.floor(min / 60), m = min % 60;
+    return h ? h + ":" + String(m).padStart(2, "0") + ":00" : m + ":00";
+  }
 
   var cur = iso(new Date());
   var calM = pd(cur); calM.setDate(1);
-  var part = "가슴", slot = "아침", page = "lift";
+  var part = "가슴", slot = "아침", page = "home", bodySec = "inbody";
 
   function wk(d) { if (!D.workouts[d]) D.workouts[d] = { ex: [], cardio: [] }; return D.workouts[d]; }
   function dtx(d) { if (!D.diet[d]) D.diet[d] = { meals: [] }; return D.diet[d]; }
@@ -994,13 +1075,36 @@ __PWA_HEAD__
   $("#mprev").onclick = function () { calM.setMonth(calM.getMonth() - 1); drawCal(); };
   $("#mnext").onclick = function () { calM.setMonth(calM.getMonth() + 1); drawCal(); };
 
+  function goPage(name) {
+    page = name;
+    // 날짜 바는 '그날의 기록'을 다루는 화면에서만 의미가 있다.
+    // 홈은 인사말에 날짜가 있고, 이론은 날짜와 무관하므로 숨긴다.
+    var needDate = (name === "lift" || name === "diet" || name === "body");
+    $(".top").style.display = needDate ? "" : "none";
+    if (!needDate) $("#cal").classList.remove("open");
+    document.querySelectorAll(".tab").forEach(function (x) {
+      x.classList.toggle("on", x.dataset.p === name);
+    });
+    document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("on"); });
+    $("#p-" + name).classList.add("on");
+    window.scrollTo(0, 0);
+    render();
+  }
   document.querySelectorAll(".tab").forEach(function (t) {
-    t.onclick = function () {
-      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
-      t.classList.add("on"); page = t.dataset.p;
-      document.querySelectorAll(".page").forEach(function (p) { p.classList.remove("on"); });
-      $("#p-" + page).classList.add("on");
-      window.scrollTo(0, 0); render();
+    t.onclick = function () { goPage(t.dataset.p); };
+  });
+  // 홈의 네모칸 → 해당 화면으로
+  document.querySelectorAll(".tile").forEach(function (t) {
+    t.onclick = function () { goPage(t.dataset.go); };
+  });
+  // 몸 탭 안쪽 전환
+  document.querySelectorAll(".sg").forEach(function (b) {
+    b.onclick = function () {
+      bodySec = b.dataset.sec;
+      document.querySelectorAll(".sg").forEach(function (x) { x.classList.toggle("on", x === b); });
+      $("#sec-inbody").style.display = bodySec === "inbody" ? "" : "none";
+      $("#sec-stats").style.display = bodySec === "stats" ? "" : "none";
+      render();
     };
   });
 
@@ -1115,17 +1219,35 @@ __PWA_HEAD__
       }
       box.appendChild(g);
     });
+    // 유산소는 나이키 러닝 기록처럼 — 거리를 크게, 페이스/시간/칼로리를 아래에
     day.cardio.forEach(function (c, ci) {
-      var g = el("div", "exg"), h = el("div", "exh");
-      h.appendChild(el("b", "", c.type));
-      h.appendChild(el("span", "pt", "유산소"));
-      var bits = [c.min + "분"];
-      if (c.km) bits.push(fmt(c.km) + "km");
-      if (c.kcal) bits.push(c.kcal + "kcal");
-      h.appendChild(el("span", "vol", bits.join(" · ")));
-      var x = el("button", "x", "×");
+      var g = el("div", "run");
+      var t = el("div", "rt");
+      t.appendChild(el("span", "", "🏃"));
+      t.appendChild(el("span", "", c.type));
+      g.appendChild(t);
+
+      var big = el("div", "rbig");
+      if (c.km) { big.textContent = c.km.toFixed(2); big.appendChild(el("i", "", "km")); }
+      else { big.textContent = c.min; big.appendChild(el("i", "", "분")); }
+      g.appendChild(big);
+
+      var grid = el("div", "rgrid");
+      function cell(v, k) {
+        var d = el("div", "rg");
+        d.appendChild(el("div", "v", v));
+        d.appendChild(el("div", "k", k));
+        return d;
+      }
+      grid.appendChild(cell(pace(c.km, c.min), "평균 페이스"));
+      grid.appendChild(cell(hhmm(c.min), "시간"));
+      grid.appendChild(cell(c.kcal ? String(c.kcal) : "—", "칼로리"));
+      g.appendChild(grid);
+
+      var x = el("button", "rx", "×");
       x.onclick = function () { day.cardio.splice(ci, 1); save(); render(); drawCal(); };
-      h.appendChild(x); g.appendChild(h); box.appendChild(g);
+      g.appendChild(x);
+      box.appendChild(g);
     });
   }
 
@@ -1495,8 +1617,34 @@ __PWA_HEAD__
 
   function monday(d) { var x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); x.setHours(0,0,0,0); return x; }
 
+  // 홈 상단 인사 + 네모칸 요약
+  function drawTiles() {
+    var h = new Date().getHours();
+    $("#greetT").textContent = h < 5 ? "늦었네요" : h < 11 ? "좋은 아침" : h < 17 ? "오늘도" : h < 22 ? "저녁이네요" : "늦었네요";
+    var d = pd(cur);
+    $("#greetS").textContent = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + WD[d.getDay()] + "요일";
+
+    var w = D.workouts[cur] || { ex: [], cardio: [] };
+    var sets = 0; w.ex.forEach(function (e) { sets += e.sets.length; });
+    var v = vol(cur);
+    $("#tvLift").textContent = (sets || w.cardio.length)
+      ? sets + "세트 · " + (v >= 1000 ? fmt(v / 1000) + "t" : fmt(v) + "kg")
+      : "오늘 기록 없음";
+
+    var meals = (D.diet[cur] || { meals: [] }).meals;
+    var kc = 0, pr = 0; meals.forEach(function (m) { kc += m.kcal; pr += m.p; });
+    var goal = Math.round(bwAt(cur) * (D.settings.proteinPerKg || 1.8));
+    $("#tvDiet").textContent = meals.length ? fmt(kc) + "kcal · 단백 " + fmt(pr) + "/" + goal + "g" : "오늘 기록 없음";
+
+    var ds = Object.keys(D.body).filter(function (x) { return D.body[x].weight !== undefined; }).sort();
+    $("#tvBody").textContent = ds.length
+      ? "체중 " + fmt(D.body[ds[ds.length - 1]].weight) + "kg · " + ds[ds.length - 1].slice(5)
+      : "측정 기록 없음";
+    $("#tvTheory").textContent = D.notes.length + "개 노트";
+  }
+
   function drawFire() {
-    drawHype();
+    drawHype(); drawTiles();
     var today = new Date(), thisMon = monday(today);
     var lastMon = new Date(thisMon); lastMon.setDate(lastMon.getDate() - 7);
 
@@ -1679,11 +1827,13 @@ __PWA_HEAD__
   /* ---------- init ---------- */
   function fillSel(id, arr) { var s = $(id); s.innerHTML = ""; arr.forEach(function (v) { var o = el("option", "", v); o.value = v; s.appendChild(o); }); }
   function render() {
-    if (page === "lift") { drawLifts(); var r = $("#rtsel"), k = r.value; fillSel("#rtsel", Object.keys(D.routines)); if (Object.keys(D.routines).indexOf(k) >= 0) r.value = k; }
-    else if (page === "fire") drawFire();
+    if (page === "home") drawFire();
+    else if (page === "lift") { drawLifts(); var r = $("#rtsel"), k = r.value; fillSel("#rtsel", Object.keys(D.routines)); if (Object.keys(D.routines).indexOf(k) >= 0) r.value = k; }
     else if (page === "diet") drawDiet();
-    else if (page === "body") drawBody();
-    else if (page === "stats") { drawStats(); drawRest(); }
+    else if (page === "body") {
+      if (bodySec === "inbody") drawBody();
+      else { drawStats(); drawRest(); }
+    }
     else if (page === "theory") drawNotes();
   }
   // 새 버전 알림 — 서비스워커가 새 버전을 받아두면 배너가 뜬다 (등록 스크립트가 .on 을 붙임)
@@ -1723,6 +1873,7 @@ __PWA_HEAD__
   fillSel("#cdtype", CARDIO);
   buildBody($("#mmFront"), "front"); buildBody($("#mmBack"), "back");
   drawParts(); drawEx(); drawSlots(); drawBodyFields(); drawMetChips();
-  drawDate(); drawCal(); render();
+  drawDate(); drawCal();
+  goPage("home");   // 홈으로 시작 (날짜 바 숨김 처리까지 함께 적용)
 })();
 </script>
